@@ -83,25 +83,42 @@ function validate_Input_maynghien(input, inputtype, allownull, inputlenght,minle
 
     return 0;
 }
+function getTypeClass(input) {
+    if (input.hasClass("email")) {
+        return "email";
+    }
+}
 function maynghien_validation(container) {
     var selector = container + " :input";
     var result = 0;
     $(selector).each(function () {
         var inputtype = $(this).data("valid");
+        if (inputtype==null || inputtype == "") {
+            inputtype=  getTypeClass($(this));
+        }
         var input = $(this);
         var allownull = !$(this).prop('required');
+        if (allownull == true) {
+            if (input.hasClass("required")) {
+                allownull = false;
+            }
+        }
         var inputlenght = $(this).data("lenght");
         var inputminlenght = $(this).data("minlenght");
         result = validate_Input_maynghien(input, inputtype, allownull, inputlenght, inputminlenght);
         var msg = "";
         input.parent().next(".validation").remove(); // remove msg err
+        var label = $(input).data("label");
+        if (label == null || label == "") {
+            label = $(input).attr("name");
+        }
         switch (result) {
            
             case 1:
-                msg = $(input).data("label") +" không được để trống!";
+                msg = label +" không được để trống!";
                 break;
             case 2:
-                msg = $(input).data("label") +" không nhập quá " + inputlenght + " ký tự" + (inputminlenght != null ? " và không được nhỏ hơn " + inputminlenght : "") + "!";
+                msg = label +" không nhập quá " + inputlenght + " ký tự" + (inputminlenght != null ? " và không được nhỏ hơn " + inputminlenght : "") + "!";
                 break;
             case 3:
                 msg = "Email không đúng định dạng!";
@@ -110,31 +127,27 @@ function maynghien_validation(container) {
                 msg = "Số điện thoại không đúng!";
                 break;
             case 5:
-                msg = $(input).data("label") +" phải nhập số nguyên!";
+                msg = label +" phải nhập số nguyên!";
                 break;
             case 6:
                 if (inputlenght > 0 && inputminlenght <= 0 )
-                    msg = $(input).data("label") + " phải nhỏ hơn " + inputlenght;
+                    msg = label + " phải nhỏ hơn " + inputlenght;
                 if (inputminlenght > 0 && inputminlenght >= 0)
-                    msg = $(input).data("label") + " phải lớn hơn " + inputminlenght;
+                    msg = label + " phải lớn hơn " + inputminlenght;
                 if(inputlenght>0 && inputminlenght>0 && inputlenght!=inputminlenght)
-                    msg = $(input).data("label") + " phải nằm trong khoảng từ " + inputminlenght + " đến " + inputlenght + "!";
+                    msg = label + " phải nằm trong khoảng từ " + inputminlenght + " đến " + inputlenght + "!";
                 if (inputlenght > 0 && inputminlenght > 0 && inputlenght == inputminlenght)
-                    msg = $(input).data("label") + " phải bằng " + inputminlenght;
+                    msg = label + " phải bằng " + inputminlenght;
                 break;
             case 7:
-                msg = $(input).data("label") +" phải nhập số!";
+                msg = label +" phải nhập số!";
                 break;
 
         }
         if (result > 0)
         {
-            $.notify({
-                title: '<strong>Không lưu được!</strong>',
-                message: msg
-            }, {
-                    type: 'danger'
-                });
+            showmessage(msg);
+            
             $(this).focus();
             return false;
             
