@@ -205,6 +205,16 @@ $(document).on("click", ".findform", function () {
 
 
 });
+$(document).on("click", ".grid-delete", function () {
+    var url = $(this).data("url");
+    var id = $(this).data("id");
+    var grid = $(this).data("grid");
+    ConfirmDelete(url + "?id=" + id, id, grid);
+   
+
+
+
+});
 $(document).on("click", ".exportform", function () {
 
     var container = $(this).data("container");
