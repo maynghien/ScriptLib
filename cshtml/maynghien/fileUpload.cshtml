@@ -1,0 +1,85 @@
+﻿@{
+    Layout = null;
+}
+<style>
+    .img-dinhkem{
+        max-width:300px;
+    }
+</style>
+<div style="display:none">
+    <div id="dlgUpload">
+        <div id="UploadExcelProgress">
+            <input id="fileupload" type="file" name="fileupload" style="display:none">
+            <div id="progress" class="progress progress-striped active">
+                <div class="bar" style="width: 0%;"></div>
+            </div>
+            <p>Đang xử lý dữ liệu, bạn vui lòng đợi trong giây lát!</p>
+        </div>
+    </div>
+</div>
+<script>
+     $("#dlgUpload").dialog({
+            autoOpen: false,
+
+     });
+    var filetypeArr = {
+        excel: ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel",
+        image:"image/*"
+    };
+    $(document).on("click", ".btnupload", function () {
+
+        var url = $(this).data("url");
+        var filetype = $(this).data("filetype");
+        var ondone = $(this).data("ondone");
+        $("#fileupload").attr("accept", filetypeArr[filetype]);
+        $("#fileupload").data("url", url);
+        $("#fileupload").data("ondone", ondone);
+
+        $("#dlgUpload").dialog("open");
+        upload = 1;
+
+        $('#progress .bar').css(
+            'width',
+            '0%'
+        );
+        $('#fileupload').fileupload({
+            url: $("#fileupload").data("url"),
+            autoUpload: true,
+            dataType: 'json',
+            done: function (e, data) {
+                $("#Demogrid").trigger("reloadGrid");
+                $('#progress .bar').css(
+                    'width',
+                     '0%'
+                );
+                $("#dlgUpload").dialog("close");
+
+                showmessage(data.result.result);
+                var ondone = $("#fileupload").data("ondone");
+                window[ondone](data.result);
+
+            },
+            
+            fail: function (e, data) {
+                $("#dlgUpload").dialog("close");
+                $('#progress .bar').css(
+                   'width',
+                    '0%'
+               );
+                showmessage('Fail!' +data);
+            },
+            progressall: function (e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#progress .bar').css(
+                    'width',
+                    progress + '%'
+                );
+            }
+        });
+        $("#fileupload").trigger("click");
+
+    });
+     $(function () {
+
+    });
+</script>

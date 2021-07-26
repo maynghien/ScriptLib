@@ -1,0 +1,123 @@
+﻿<div id="message" title="Thông báo">
+    <div id="message_content"></div>
+</div>
+<div id="Delete-confirm" title="Xóa dòng?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>Dữ liệu đã xóa không thể khôi phục, bạn chắc chứ?</p>
+
+</div>
+<div id="Delete-not_Grid" title="Xóa dòng?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>Dữ liệu đã xóa không thể khôi phục, bạn chắc chứ?</p>
+
+</div>
+<button style="display:none" type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+    <div id="liveToast" class="toast hide bg-primary  text-white " role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toastbody">
+                Hello, world! This is a toast message.
+            </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+
+        </div>
+    </div>
+</div>
+<script>
+    var DeleteUrl = "";
+    var DeleteId = "";
+    var DeleteGridname = "";
+    var DeleteAction = "";
+    $(function () {
+        $("#message").dialog({
+            autoOpen: false,
+
+            modal: true,
+        });
+
+
+    });
+    $("#Delete-confirm").dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        autoOpen: false,
+        buttons: {
+            "Xóa": function () {
+                $.ajax({
+                    type: "POST",
+                    url: DeleteUrl,
+
+                    datatype: "text",
+                    success: function (data) {
+                        $('#' + DeleteGridname).jqGrid('delRowData', DeleteId);
+                        $("#Delete-confirm").dialog("close");
+                    },
+                    error: function (data) {
+
+                        $("#Delete-confirm").dialog("close");
+                    }
+                });
+
+            },
+            "Hủy": function () {
+                $("#Delete-confirm").dialog("close");
+            }
+        }
+    });
+    $("#Delete-not_Grid").dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        autoOpen: false,
+        buttons: {
+            "Xóa": function () {
+                $.ajax({
+                    type: "GET",
+                    url: DeleteUrl + "/" + DeleteId,
+
+                    datatype: "text",
+                    success: function (data) {
+                        window[DeleteAction](data);
+                        $("#Delete-not_Grid").dialog("close");
+                    },
+                    error: function (data) {
+                        showmessage(data);
+                        $("#Delete-not_Grid").dialog("close");
+                    }
+                });
+
+            },
+            "Hủy": function () {
+                $("#Delete-confirm").dialog("close");
+            }
+        }
+    });
+    function showmessage(content) {
+        //$.notify({
+        //                    title: '<strong>Thông báo: </strong>',
+        //                    message: content
+        //                }, {
+        //                        type: 'primary'
+        //                    });
+        //return false;
+        //new bootstrap.Toast($("#liveToast"));
+        $("#toastbody").html(content);
+        $("#liveToast").toast('show');
+
+    }
+    function ConfirmDelete(delurl, id, gridname) {
+        DeleteUrl = delurl;
+        DeleteGridname = gridname;
+        DeleteId = id;
+        $("#Delete-confirm").dialog("open");
+    }
+    function ConfirmDeleteNotGrid(delurl, id, action) {
+        DeleteUrl = delurl;
+        DeleteAction = action;
+        DeleteId = id;
+        $("#Delete-not_Grid").dialog("open");
+    }
+</script>
+
