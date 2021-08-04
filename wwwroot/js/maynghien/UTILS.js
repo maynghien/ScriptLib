@@ -176,13 +176,16 @@ function createformparam(container) {
     $("#" + container + " :input").each(function () {
 
         var Id = $(this).attr('id');
-
+        var name = $(this).attr('name');
+        if (name == null && name == "") {
+            name = Id;
+        }
         var val = $(this).val();
-        if (val == null) val = '';
         if ($(this).attr('type') == "checkbox") {
             val = this.checked;
         }
-        params += Id + "=" + val + "&";
+
+        params += name + "=" + val + "&";
     });
     params = params.slice(0, -1);
     return params;
