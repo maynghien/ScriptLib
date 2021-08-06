@@ -256,4 +256,14 @@ function GetContentByUrl(Url, Container,aftersave) {
             Saving = false;
         }
     });
+}const editors = {}; // You can also use new Map() if you use ES6.
+
+function createEditor( elementId ) {
+    return ClassicEditor
+        .create( document.getElementById( elementId ) )
+        .then( editor => {
+            editors[ elementId ] = editor;
+        } )
+        .catch( err => console.error( err.stack ) );
 }
+
