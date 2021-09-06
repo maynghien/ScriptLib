@@ -1,4 +1,6 @@
-﻿function LoaiBoDau(text) {
+
+
+function LoaiBoDau(text) {
     var CODAU = "âăêôơưáấắéếóốớúứíýàầằèềòồờùừìỳảẩẳẻểỏổởủửỉỷãẫẵẽễõỗỡũữĩỹạậặẹệọộợụựịỵđ";
     var KODAU = "aaeoouaaaeeooouuiyaaaeeooouuiyaaaeeooouuiyaaaeeooouuiyaaaeeooouuiyd";
     var kq = "";
@@ -85,7 +87,7 @@ $(document).ready(function () {
     $(".datepicker").datepicker({
         dateFormat: "dd/mm/yy",
     });
-
+    createEditor();
 });
 //end chuẩn bị
 var Saving = false;
@@ -101,29 +103,15 @@ $(document).on("click", ".saveform", function () {
     var aftersave = $(this).data("aftersave");
     if (maynghien_validation("#" + container) == 0) {
         $("#spinnergif").trigger("click");
-        var params = "?";
-        var datatosend = {};
-        $("#" + container + " :input").each(function () {
-
-            var Id = $(this).attr('id');
-            var name = $(this).attr('name');
-            if (name == null && name == "") {
-                name = Id;
-            }
-            var val = $(this).val();
-            if ($(this).attr('type') == "checkbox") {
-                val = this.checked;
-            }
-
-            params += name + "=" + val + "&";
-            datatosend[name] = val;
-        });
-        params = params.slice(0, -1);
-        var jsondata = JSON.stringify({ datatosend: datatosend });
+        var params = createformparam(container);
+        var jsondata = new Array();
+        
+        var data = createformdata(container);
+        url += params;
         $.ajax({
             type: "post",
             url: url /*+ params*/,
-            data: datatosend,
+            data: data,
             datatype: "json",
             success: function (data) {
                 Saving = false;
@@ -171,6 +159,7 @@ function stringToDate(strDate) {
     var d = arr[2] + "-" + (arr[1].lenght > 1 ? arr[1] : "0" + arr[1]) + "-" + arr[0];
     return new Date(d);
 }
+
 function createformparam(container) {
     var params = "?";
     $("#" + container + " :input").each(function () {
@@ -184,11 +173,35 @@ function createformparam(container) {
         if ($(this).attr('type') == "checkbox") {
             val = this.checked;
         }
-
+        if (val == null || name == undefined) {
+            return;
+        }
         params += name + "=" + val + "&";
     });
     params = params.slice(0, -1);
     return params;
+}
+function createformdata(container) {
+    var data = {};
+    $("#" + container + " :input").each(function () {
+
+        var Id = $(this).attr('id');
+        var name = $(this).attr('name');
+        if (name == null && name == "") {
+            name = Id;
+        }
+        var val = $(this).val();
+        if ($(this).attr('type') == "checkbox") {
+            val = this.checked;
+        }
+        if ($(this).hasClass("ckeditor")) {
+            val = allCkEditors[name+"div"].getData();
+        }
+        if (val == null || name == undefined) return;
+        data[name] = val;
+    });
+    //params = params.slice(0, -1);
+    return data;
 }
 $(document).on("click", ".findform", function () {
 
@@ -213,7 +226,7 @@ $(document).on("click", ".grid-delete", function () {
     var id = $(this).data("id");
     var grid = $(this).data("grid");
     ConfirmDelete(url + "?id=" + id, id, grid);
-   
+
 
 
 
@@ -232,7 +245,7 @@ $(document).on("click", ".exportform", function () {
 
 
 });
-function GetContentByUrl(Url, Container,aftersave) {
+function GetContentByUrl(Url, Container, aftersave) {
     var spinner = "<div class='row' style='text-align:center;animation: spin 2s linear infinite;'><i class='fas fa-spinner fa-7x'></i></div>";
     $("#" + Container).html(spinner);
     $.ajax({
@@ -256,14 +269,85 @@ function GetContentByUrl(Url, Container,aftersave) {
             Saving = false;
         }
     });
-}const editors = {}; // You can also use new Map() if you use ES6.
-
-function createEditor( elementId ) {
-    return ClassicEditor
-        .create( document.getElementById( elementId ) )
-        .then( editor => {
-            editors[ elementId ] = editor;
-        } )
-        .catch( err => console.error( err.stack ) );
 }
+var allCkEditors = {};
 
+function createEditor(editorid) {
+    var val = $("#" + editorid).val();
+    var editordiv = "<div id='" + editorid + "div' >" + val + "</div>";
+    $("#" + editorid).hide();
+    $("#" + editorid).after(editordiv);
+    ClassicEditor
+        .create(document.querySelector('#' + editorid+"div"), {
+            removePlugins: ['Title'],
+            placeholder: '',
+            toolbar: {
+                items: [
+                    'sourceEditing',
+                    'heading',
+                    '|',
+                    'fontBackgroundColor',
+                    'fontFamily',
+                    'fontSize',
+                    'fontColor',
+                    'alignment',
+                    'bold',
+                    'underline',
+                    'italic',
+                    'link',
+                    'strikethrough',
+                    'bulletedList',
+                    'numberedList',
+                    '|',
+                    'outdent',
+                    'indent',
+                    '|',
+                    'CKFinder',
+                    'blockQuote',
+                    'insertTable',
+                    'mediaEmbed',
+                    'undo',
+                    'redo',
+                    'htmlEmbed',
+                    'removeFormat',
+                    'specialCharacters',
+                    'restrictedEditingException',
+                    'todoList',
+                    'findAndReplace',
+                    'textPartLanguage'
+                ]
+            },
+            language: 'vi',
+            image: {
+                toolbar: [
+                    'imageTextAlternative',
+                    'imageStyle:inline',
+                    'imageStyle:block',
+                    'imageStyle:side'
+                ]
+            },
+            table: {
+                contentToolbar: [
+                    'tableColumn',
+                    'tableRow',
+                    'mergeTableCells',
+                    'tableCellProperties',
+                    'tableProperties'
+                ]
+            },
+            licenseKey: '',
+
+
+
+        })
+        .then(editor => {
+            allCkEditors[editorid + "div"] = editor;
+
+
+
+
+        })
+        .catch(error => {
+
+        });
+}
